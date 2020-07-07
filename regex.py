@@ -25,6 +25,7 @@ class color:
 
 class UpdateUI(QObject):
     changedValue = pyqtSignal(str, bool)
+    resetValue = pyqtSignal()
 
 cmd_dict = {
     # Lenh
@@ -93,6 +94,32 @@ cmd_dict = {
     '30'        : 4
 }
 
+word_rules = [['Bat', 'Den'], 
+        ['Tat', 'Den'], 
+        ['Den', 'Bat'],
+        ['Den', 'Tat'],
+        ['Den', 'Sang Hon'], 
+        ['Den', 'Toi Hon'],
+        ['Bat', 'Tivi'], 
+        ['Tat', 'Tivi'], 
+        ['Tivi', 'Bat'],
+        ['Tivi', 'Tat'],
+        ['Bat', 'Quat'], 
+        ['Tat', 'Quat'], 
+        ['Quat', 'Bat'],
+        ['Quat', 'Tat'],
+        ['Keo Len', 'Rem Cua'], 
+        ['Keo Xuong', 'Rem Cua'], 
+        ['Rem Cua', 'Keo Len'],
+        ['Rem Cua', 'Keo Xuong'],
+        ['Dong', 'Rem Cua'], 
+        ['Mo', 'Rem Cua'], 
+        ['Rem Cua', 'Dong'],
+        ['Rem Cua', 'Mo'],
+        ['Dong', 'Cua'], 
+        ['Mo', 'Cua'], 
+        ['Cua', 'Dong'],
+        ['Cua', 'Mo']]
 # Cau lenh thuc te
 
 rules = [[0,3,1,2],
@@ -142,21 +169,54 @@ def get_cmd(text):
     conn_ui.changedValue.emit(' '.join(res), False)
     return ''
 def reset_cmd():
-    # threading.Timer(20.0, reset_cmd).start()
+    conn_ui.resetValue.emit()
     res.clear()
     cmd.clear()
-# reset_cmd()
+def compare_rules(objs):
+    print(cmd)
+    print(res)
+    print(objs)
+    if not res:
+        return objs[0]
+    for obj in objs:
+        if cmd[0] == 0:
+            if is_matching(res[0], obj):
+                return obj
+        if cmd[0] == 1:
+            if len(cmd) == 1:
+                if cmd_dict[obj] == 2:
+                    return obj
+            else:
+                if is_matching(res[0], obj):
+                    return obj
+    return objs[0]
+def is_matching(obj1, obj2):
+    return [obj1, obj2] in word_rules
 if __name__ == "__main__":
-    import time
-    time.sleep(2)
-    text = "Den"
-    result= get_cmd(text)
-    print("==>",result)
-    text = "Phong Khach"
-    result= get_cmd(text)
-    print("==>",result)
-    text = "Bat"
-    result= get_cmd(text)
-    print("==>",result)
+    # import time
+    # time.sleep(2)
+    # text = "Den"
+    # result= get_cmd(text)
+    # print("==>",result)
+    # text = "Phong Khach"
+    # result= get_cmd(text)
+    # print("==>",result)
+    # text = "Bat"
+    # result= get_cmd(text)
+    # print("==>",result)
     
+    a = ['Den', 'Chuyen']
+    p = compare_rules(a)
+    print(p)
+    get_cmd(p)
+    a = ['Phong Khach', 'Tat']
+    p = compare_rules(a)
+    print(p)
+    get_cmd(p)
+    a = ['Quat', 'Bat']
+    p = compare_rules(a)
+    print(p)
+    get_cmd(p)
+    
+
     

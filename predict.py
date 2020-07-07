@@ -224,7 +224,7 @@ def t_predict(data):
         inv_map = {v: k for k, v in GSCmdV2Categs.items()}
         pred_label = inv_map[np.argmax(out[0])]
         accuracy = max(out[0])
-        # Record.record_to_file(data, 2, pred_label, accuracy, 16000)
+        Record.record_to_file(data, 2, pred_label, accuracy, 16000)
         print("predict", pred_label)
         print("accuracy", accuracy)
         #client.publish("predict", pred_label)
@@ -233,6 +233,45 @@ def t_predict(data):
             if cmd != "":
                 print(color.BOLD +"                                                                                  " + cmd + color.END)
         return pred_label, accuracy
+
+    except:
+        print("An exception occurred")
+        raise
+tunning_size = 3
+def t_predict_with_rules(data):
+    try:
+        start = time.time()
+        data = audioUtils.t_process_data(data)
+        print("Process time", time.time() - start)
+        l = len(data)
+        if l > 16000:
+            data = data[0:16000]
+        if l < 16000:
+            print("<16000:", l)
+            for i in range (l,16000):
+                data.append(0)
+        X = np.empty((1, len(data)))
+        X[0] = data
+
+        out = model.predict(X)
+        out_sort = np.sort(out[0])
+        inv_map = {v: k for k, v in GSCmdV2Categs.items()}
+        pred_label = []
+        accuracy = []
+        for i in range(tunning_size):
+            ii, = np.where(out[0] == out_sort[-1-i])
+            pred_label.append(inv_map[ii[0]])
+            accuracy.append(out[0][ii])
+        
+        # Record.record_to_file(data, 2, pred_label, accuracy, 16000)
+        print("predict", pred_label)
+        pred_final = regex.compare_rules(pred_label)
+        #client.publish("predict", pred_label)
+        # if accuracy > 0.5:
+        cmd = regex.get_cmd(pred_final)
+        if cmd != "":
+            print(color.BOLD +"                                                                                  " + cmd + color.END)
+        return pred_final, accuracy[pred_label.index(pred_final)]
 
     except:
         print("An exception occurred")

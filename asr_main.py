@@ -18,9 +18,9 @@ class MyForm(QDialog):
 
     def display_msg(self):
         # if rec.end:
-        self.ui.text_box.setTextColor(QColor(200,200,200))
-        self.ui.text_box.setText("Say something ....")
-        self.ui.record_button.setText("Say")
+        # self.ui.text_box.setTextColor(QColor(200,200,200))
+        # self.ui.text_box.setText("Say something ....")
+        # self.ui.record_button.setText("Say")
         regex.reset_cmd()
         if rec.end:
             rec.record()
@@ -31,8 +31,14 @@ class MyForm(QDialog):
         else:
             self.ui.text_box.setTextColor(QColor(0,0,0))
         self.ui.text_box.setText(val)
+    @pyqtSlot()
+    def reset_value(self):
+        self.ui.text_box.setTextColor(QColor(200,200,200))
+        self.ui.text_box.setText("Say something ....")
+        self.ui.record_button.setText("Say")
     def make_connection(self, obj):
         obj.changedValue.connect(self.change_text_value)
+        obj.resetValue.connect(self.reset_value)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = MyForm()

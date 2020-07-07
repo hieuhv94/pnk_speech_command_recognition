@@ -16,6 +16,7 @@ from pydub.silence import split_on_silence
 from pydub import AudioSegment
 from pathlib import Path
 import threading
+import regex
 CHUNK = 1024
 
 THRESHOLD = 1400
@@ -105,6 +106,9 @@ def record():
     line, = ax.plot(x, np.random.rand(CHUNK))
     ax.set_ylim([-2 ** 10, (2 ** 10 - 1)])
     buffer = array('h')
+    size_buffer = 7
+    t1 = 0
+    reset_timer = False
     while True:
         if end:
             stream.stop_stream()
@@ -112,7 +116,6 @@ def record():
             p.terminate()
             break
         record_data = array('h', stream.read(CHUNK))
-        size_buffer = 3
         if byteorder == 'big':
             record_data.byteswap()
         
@@ -130,6 +133,8 @@ def record():
                 is_recording = False
                 num_silent = 0
                 print('Stop')
+                t1 = time.time()
+                reset_timer = True
                 # rate, r = wav.read("/home/hieuhv/Documents/ASR/data_processed_bak/Bat/hadq_8.wav")
                 sample_width = p.get_sample_size(FORMAT)
                 # r = normalize(r)
@@ -137,6 +142,8 @@ def record():
                 # r = add_silence(r, 0.5)
                 # record_to_file(r, 2)
                 r = buffer + r
+                # t1 = threading.Thread(target=record_to_file, args=(r,2, 'segment', 0, RATE))
+                # t1.start()
                 numpy_arr = np.array(r)
                 audio_segment = pydub.AudioSegment(
                     numpy_arr.tobytes(), 
@@ -166,6 +173,10 @@ def record():
                 g_time = time.time()
             r.extend(record_data)
         else:
+            if (time.time() - t1) >= 5:
+                if reset_timer:
+                    reset_timer = False
+                    regex.reset_cmd()
             if len(buffer) < size_buffer*CHUNK:
                 buffer.extend(record_data)
             else:
@@ -202,10 +213,9 @@ def record_to_file(data, sample_width, label, accuracy,rate):
 def predict_data(data):
     global g_time
     start = time.time()
-    label, accuracy = predict.t_predict(data)
+    label, accuracy = predict.t_predict_with_rules(data)
     print("********* Overall time:", time.time()- g_time)
     # record_to_file(data, 2, label, accuracy)
-    label += "_"
     t = threading.Thread(target=record_to_file, args=(data,2,label, accuracy, RATE))
     t.start()
     print("Predict time", time.time() - start)

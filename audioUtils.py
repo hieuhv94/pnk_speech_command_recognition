@@ -67,6 +67,8 @@ def WAV2Numpy(folder, sr=None):
         os.remove(file)
 
 # thres = -40
+
+
 def detect_leading_silence(sound, silence_threshold=-40.0, chunk_size=10):
     '''
     sound is a pydub.AudioSegment
@@ -76,7 +78,6 @@ def detect_leading_silence(sound, silence_threshold=-40.0, chunk_size=10):
     iterate over chunks until you find the first one with sound
     '''
     trim_ms = 0  # ms
-    print("thres ", silence_threshold)
     assert chunk_size > 0  # to avoid infinite loop
     while sound[trim_ms:trim_ms+chunk_size].dBFS < silence_threshold and trim_ms < len(sound):
         trim_ms += chunk_size
@@ -93,7 +94,7 @@ def process_data(file_path):
     duration = len(sound)
     print("len:", duration)
     out_sound = sound
-    
+
     if duration < 1000:
         offset = 1000 - duration
         silence_sound = AudioSegment.silent(duration=offset)
@@ -104,7 +105,7 @@ def process_data(file_path):
         end_trim = detect_leading_silence(sound.reverse())
 
         l = duration - end_trim - start_trim
-        
+
         if l < 10:
             print("Sound in audio is too short", file_path)
 
@@ -131,7 +132,7 @@ def process_data(file_path):
     # ind = file_path.rfind('.')
     # new_path = file_path[0:ind] + '_processed.wav'
     # out_sound.export(new_path, format="wav")
-    
+
     samples = out_sound.get_array_of_samples()
 
     return samples
@@ -139,18 +140,18 @@ def process_data(file_path):
     # sample_rate, samples = wavfile.read(file_path)
     # if len(samples) > 16000:
     #     out_sound = out_sound[0:len(out_sound) - 1]
-    
+
     # out_sound.export(file_path, format="wav")
 
     #print("Process audio successfully!")
 
 
 def t_process_data(data):
-    sound = AudioSegment(data.tobytes(), 
+    sound = AudioSegment(data.tobytes(),
                     frame_rate=44100,
-                    sample_width=2, 
+                    sample_width=2,
                     channels=1)
-                    
+
     sound = sound.set_frame_rate(16000)
     sound = sound.set_channels(1)
     sound = sound.set_sample_width(2)
@@ -158,7 +159,7 @@ def t_process_data(data):
     duration = len(sound)
     print("len:", duration)
     out_sound = sound
-    
+
     if duration < 1000:
         offset = 1000 - duration
         silence_sound = AudioSegment.silent(duration=offset)
@@ -205,3 +206,58 @@ def t_process_data(data):
     samples = out_sound.get_array_of_samples()
 
     return samples
+
+
+# def process_sound(sound):
+#     sound = sound.set_frame_rate(16000)
+#     sound = sound.set_channels(1)
+#     sound = sound.set_sample_width(2)
+
+#     duration = len(sound)
+
+#     out_sound = sound
+
+#     # if duration < 1000:
+#     #     offset = 1000 - duration
+#     #     silence_sound = AudioSegment.silent(duration=offset)
+#     #     out_sound = sound + silence_sound
+
+#     # else:
+#     start_trim = detect_leading_silence(sound, silence_threshold=-42.0)
+#     end_trim = detect_leading_silence(sound.reverse(), silence_threshold=-42.0)
+
+#     l = duration - end_trim - start_trim
+#     print('len', l)
+#     if l < 50:
+#         print("Sound in audio is too short")
+
+#     if l > 1000:
+#         print("Warning: Sound in audio is too long")
+#         out_sound = sound[start_trim:start_trim + 1000]
+
+#     else:
+#         offset = 1000 - l
+#         start = start_trim
+#         end = duration - end_trim
+#         end_silent = AudioSegment.silent(duration=offset)
+
+#         out_sound = sound[start:end] + end_silent
+
+#     samples = out_sound.get_array_of_samples()
+
+#     return samples
+
+
+# def process_data(file_path):
+#     sound = AudioSegment.from_file(file_path, format="wav")
+
+#     return process_sound(sound)
+
+
+# def t_process_data(data):
+#     sound = AudioSegment(data.tobytes(),
+#                          frame_rate=44100,
+#                          sample_width=2,
+#                          channels=1)
+
+#     return process_sound(sound)
